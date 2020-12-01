@@ -1,18 +1,39 @@
-const { verifyIfEmailExists, createUser } = require('../repositories/usersRepository');
+const { verifyIfEmailExists, createUser, authenticateUser } = require('../repositories/usersRepository');
+const { createSession } = require('../repositories/sessionsRepository');
 
 async function signUp(req, res) {
     const { name, email, password } = req.body;
+    let createdUser;
 
     const isRepeated = await verifyIfEmailExists(email);
 
-    if (isRepeated === 'Error') return res.sendStatus(500).send('Internal server error')
-    else if (isRepeated === true) return res.sendStatus(409).send('Email already in use');
+    if (isRepeated.statusCode === 500) return res.status(500).send(isRepeated.message)
+    else if (isRepeated.statusCode === 409) return res.status(409).send(isRepeated.message);
 
-    const createdUser = await createUser({ name, email, password });
+    const createUserResponse = await createUser({ name, email, password });
     
-    if (createdUser === 'Error') return res.sendStatus(500).send('Internal server error');
+    if (createUserResponse.statusCode === 500) return res.status(500).send(createdUser.message)
+    else createdUser = createUserResponse.content;
 
-    res.status(200).send(createdUser);
+    res.status(201).send(createdUser);
 }
 
-module.exports = { signUp };
+async function signIn(req, res) {
+    const { email, password } = req.body;
+    let foundUser, newSession;
+
+    const authenticateResponse = await authenticateUser(email, password);
+
+    if (authenticateResponse.statusCode === 500) return res.status(500).send(foundUser.message)
+    else if (authenticateResponse.statusCode === 404) return res.status(404).send(foundUser.message)
+    else foundUser = authenticateResponse.content;
+
+    const launchSessionRequest = await createSession(foundUser.id);
+
+    if (launchSessionRequest.statusCode === 500) return res.status(500).send(launchSessionRequest.message)
+    else newSession = launchSessionRequest.content;
+
+    return res.status(200).send(newSession);
+}
+
+module.exports = { signUp, signIn };
