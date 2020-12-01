@@ -13,7 +13,7 @@ async function createUser({ name, email, password }) {
         );
     }
     catch {
-        return { statusCode: 500, message: 'Internal server error'};
+        return { statusCode: 500, message: 'Erro no servidor'};
     }
 
     const createdUser = { id: creationResult.id, name, email };
@@ -28,11 +28,11 @@ async function verifyIfEmailExists(email) {
         results = await connectionToDB.query('SELECT * FROM users WHERE email = $1', [email]);
     }
     catch {
-        return { statusCode: 500, message: 'Internal server error'};
+        return { statusCode: 500, message: 'Erro no servidor'};
     }
     
     return results.rows.length > 0 
-        ? { statusCode: 409, message: 'Email already in use'} 
+        ? { statusCode: 409, message: 'Email já cadastrado'} 
         : { statusCode: 200 };
 }
 
@@ -44,16 +44,16 @@ async function authenticateUser(email, password) {
         foundUser = results.rows[0];
     }
     catch {
-        return { statusCode: 500, message: 'Internal server error'};
+        return { statusCode: 500, message: 'Erro no servidor'};
     }
 
-    if (!foundUser) return { statusCode: 404, message: 'User not found'};
+    if (!foundUser) return { statusCode: 404, message: 'Usuário não encontrado'};
 
     const passwordIsCorrect = bcrypt.compareSync(password, foundUser.password);
 
     return passwordIsCorrect 
         ? { statusCode: 200, content: foundUser}
-        : { statusCode: 401, message: 'Wrong password'};
+        : { statusCode: 401, message: 'Senha incorreta' };
 }
 
 module.exports = { verifyIfEmailExists, createUser, authenticateUser };

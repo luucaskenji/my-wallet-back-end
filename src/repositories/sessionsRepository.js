@@ -11,7 +11,7 @@ async function createSession(id) {
         );
     }
     catch {
-        return { statusCode: 500, message: 'Internal server error' };
+        return { statusCode: 500, message: 'Erro no servidor' };
     }
 
     return { statusCode: 200, content: newSession }
