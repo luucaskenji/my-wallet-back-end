@@ -54,7 +54,14 @@ async function signIn(req, res) {
         newSession = launchSessionRequest.content;
     }
 
-    return res.status(200).send(newSession);
+    const userData = {
+        id: foundUser.id,
+        name: foundUser.name,
+        email: foundUser.email,
+        token: newSession.token
+    };
+
+    return res.status(200).send(userData);
 }
 
 module.exports = { signUp, signIn };
