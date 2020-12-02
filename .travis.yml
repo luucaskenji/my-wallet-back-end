@@ -1,0 +1,19 @@
+language: node_js
+  node_js:
+    - lts/*
+
+install:
+  bash ./.build-scripts/check-if-exists.sh ./package.json
+  bash ./.build-scripts/check-if-exists.sh ./package-lock.json
+  bash ./.build-scripts/check-if-do-not-exist.sh ./node_modules
+  bash ./.build-scripts/check-if-do-not-exist.sh ./.env
+  bash ./.build-scripts/check-if-do-not-exist.sh ./dist
+  bash ./.build-scripts/check-if-do-not-exist.sh ./build
+  npm i
+  npm run build --if-present
+  bash ./.build-scripts/check-server-presence.sh ./
+  bash ./.build-scripts/check-server-dependencies.sh
+  bash ./.build-scripts/check-server-startup.sh
+  
+build:
+  false
