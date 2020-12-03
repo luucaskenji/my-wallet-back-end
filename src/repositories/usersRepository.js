@@ -56,4 +56,24 @@ async function authenticateUser(email, password) {
         : { statusCode: 401, message: 'Senha incorreta' };
 }
 
-module.exports = { verifyIfEmailExists, createUser, authenticateUser };
+async function getUserDataById(id) {
+    let foundUser;
+
+    try {
+        const response = await connectionToDB.query('SELECT * FROM users WHERE id = $1', [id]);
+        foundUser = {...response.rows[0]};
+        delete foundUser.password;
+    }
+    catch {
+        return { statusCode: 500, message: 'Erro no servidor' };
+    }
+
+    if (!foundUser) {
+        return { statusCode: 403, message: 'Não autorizado' }
+    }
+    else {
+        return { statusCode: 200, content: foundUser }
+    }    
+}
+
+module.exports = { verifyIfEmailExists, createUser, authenticateUser, getUserDataById };

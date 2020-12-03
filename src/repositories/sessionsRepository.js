@@ -6,7 +6,7 @@ async function createSession(id) {
 
     try {
         await connectionToDB.query(
-            'INSERT INTO sessions (id, token) VALUES ($1, $2)',
+            'INSERT INTO sessions ("userId", token) VALUES ($1, $2)',
             [id, newSession.token]
         );
     }
@@ -17,4 +17,18 @@ async function createSession(id) {
     return { statusCode: 200, content: newSession }
 }
 
-module.exports = { createSession }
+async function findUserSession(token) {
+    let foundSession;
+
+    try {
+        const response = await connectionToDB.query('SELECT * FROM sessions WHERE token = $1', [token]);
+        foundSession = response.rows[0];
+    }
+    catch {
+        return { statusCode: 500, message: 'Erro no servidor' };
+    }
+
+    return { statusCode: 200, content: foundSession };
+}
+
+module.exports = { createSession, findUserSession }
