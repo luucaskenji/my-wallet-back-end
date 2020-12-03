@@ -11,7 +11,7 @@ install:
   - bash ./.build-scripts/check-if-do-not-exist.sh ./dist
   - bash ./.build-scripts/check-if-do-not-exist.sh ./build
   - npm i
-  - npm run build--if-present
+  - npm run build --if-present
   - bash ./.build-scripts/check-server-presence.sh ./
   - bash ./.build-scripts/check-server-dependencies.sh
   - bash ./.build-scripts/check-server-startup.sh
