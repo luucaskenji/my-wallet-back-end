@@ -1,5 +1,23 @@
 const { connectionToDB } = require('../database');
 
+async function getFinancesByUserId(userId) {
+    let userFinances;
+
+    try {
+        const response = await connectionToDB.query(
+            'SELECT * FROM finances WHERE "authorId" = $1',
+            [userId]
+        );
+
+        userFinances = response.rows;
+    }
+    catch {
+        return { statusCode: 500, message: 'Erro no servidor' };
+    }
+
+    return { statusCode: 200, content: userFinances };
+}
+
 async function postFinanceInDB(value, description, type, authorId) {
     let postedFinance;
 
@@ -18,4 +36,4 @@ async function postFinanceInDB(value, description, type, authorId) {
     return { statusCode: 201, content: postedFinance };
 }
 
-module.exports = { postFinanceInDB }
+module.exports = { getFinancesByUserId, postFinanceInDB }
