@@ -1,8 +1,9 @@
 const joi = require('joi');
 
-const income = joi.object({
+const moneyOperations = joi.object({
     value: joi.string().pattern(/^[0-9]+\,{1}[0-9]{2}$/).required(),
-    description: joi.string()
+    description: joi.string(),
+    type: joi.string().required()
 });
 
-module.exports = { income };
+module.exports = { moneyOperations };

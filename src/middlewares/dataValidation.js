@@ -24,13 +24,13 @@ function signIn(req, res, next) {
 }
 
 function incomeAndExpense(req, res, next) {
-    const { value, description } = req.body;
+    const { value, description, type } = req.body;
     
-    if (!value || !("description" in req.body)) return res.status(400).send('Dados inválidos');
+    if (!value || !("description" in req.body || !type)) return res.status(400).send('Dados inválidos');
     
     if (!description) req.body.description = 'Sem descrição';
 
-    const { error } = financesSchemas.income.validate(req.body);
+    const { error } = financesSchemas.moneyOperations.validate(req.body);
     if (error) return res.status(422).send(error.details[0].message);
 
     next();

@@ -1,8 +1,7 @@
 const { connectionToDB } = require('../database');
 
-async function postFinanceInDB(value, description, authorId) {
+async function postFinanceInDB(value, description, type, authorId) {
     let postedFinance;
-    const type = value > 0 ? 'Income' : 'Expense';
 
     try {
         const creationResponse = await connectionToDB.query(
