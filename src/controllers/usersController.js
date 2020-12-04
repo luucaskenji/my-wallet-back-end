@@ -1,4 +1,4 @@
-const { verifyIfEmailExists, createUser, authenticateUser } = require('../repositories/usersRepository');
+const { verifyIfEmailExists, createUser, authenticateUser, endSession } = require('../repositories/usersRepository');
 const { createSession } = require('../repositories/sessionsRepository');
 
 async function signUp(req, res) {
@@ -64,4 +64,16 @@ async function signIn(req, res) {
     return res.status(200).send(userData);
 }
 
-module.exports = { signUp, signIn };
+async function signOut(req, res) {
+    const { user } = req;
+
+    const endSessionResponse = await endSession(user.id);
+
+    if (endSessionResponse.statusCode === 500) {
+        return res.status(500).send('Erro no servidor');
+    }
+
+    res.sendStatus(200);
+}
+
+module.exports = { signUp, signIn, signOut };

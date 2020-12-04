@@ -1,18 +1,7 @@
 const supertest = require('supertest');
 const { app } = require('../../src/app');
 const { connectionToDB } = require('../../src/database');
-
-const cleanDB = async () => {
-    let testUser;
-    const result = await connectionToDB.query("SELECT * FROM users WHERE name = 'automated test'");
-    
-    if (!result.rows[0]) return;
-    else testUser = result.rows[0];
-
-    await connectionToDB.query("DELETE FROM users WHERE name = 'automated test'");
-    await connectionToDB.query("DELETE FROM users WHERE name = 'Fulano'");
-    await connectionToDB.query(`DELETE FROM sessions WHERE "userId" = ${testUser.id}`);
-};
+const { cleanDB, getValidToken } = require('../sideFunctions/sideFunctions');
 
 beforeAll(cleanDB);
 afterAll(async () => {
@@ -92,5 +81,11 @@ describe('signIn', () => {
         const response = await supertest(app).post('/user/sign-in').send(body);
 
         expect(response.status).toBe(401);
+    });
+});
+
+describe('signOut', () => {
+    it('should return 200 if the user logs out successfully', async () => {
+
     });
 });

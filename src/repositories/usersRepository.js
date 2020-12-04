@@ -76,4 +76,24 @@ async function getUserDataById(id) {
     }    
 }
 
-module.exports = { verifyIfEmailExists, createUser, authenticateUser, getUserDataById };
+async function endSession(userId) {
+    try {
+        const response = await connectionToDB.query(
+            'DELETE FROM sessions WHERE "userId" = $1',
+            [userId]
+        );
+    }
+    catch {
+        return { statusCode: 500, message: 'Erro no servidor' };
+    }
+
+    return { statusCode: 200 };
+}
+
+module.exports = { 
+    verifyIfEmailExists,
+    createUser,
+    authenticateUser,
+    getUserDataById,
+    endSession
+};
