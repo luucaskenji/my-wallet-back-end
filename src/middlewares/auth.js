@@ -10,8 +10,8 @@ async function authMiddleware(req, res, next) {
     const token = authenticationHeader.split(' ')[1];
     const findSessionResponse = await findUserSession(token);
 
-    if (findSessionResponse.statusCode === 500) {
-        return res.status(500).send(findSessionResponse.message);
+    if (findSessionResponse.statusCode !== 200) {
+        return res.status(findSessionResponse.statusCode).send(findSessionResponse.message);
     }
     else session = findSessionResponse.content;
     

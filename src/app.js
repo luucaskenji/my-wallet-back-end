@@ -12,6 +12,6 @@ app.use(express.json());
 
 app.post('/user/sign-up', dataValidation.signUp, signUp);
 app.post('/user/sign-in', dataValidation.signIn, signIn)
-app.post('/finances/new-income',authMiddleware, dataValidation.incomeAndExpense, postIncome);
+app.post('/finances/new-income', authMiddleware, dataValidation.incomeAndExpense, postIncome);
 
-app.listen(3000);
+module.exports = { app };

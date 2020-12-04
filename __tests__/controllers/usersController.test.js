@@ -1,4 +1,24 @@
-const axios = require('axios');
+const supertest = require('supertest');
+const { app } = require('../../src/app');
+const { connectionToDB } = require('../../src/database');
+
+const cleanDB = async () => {
+    let testUser;
+    const result = await connectionToDB.query("SELECT * FROM users WHERE name = 'automated test'");
+    
+    if (!result.rows[0]) return;
+    else testUser = result.rows[0];
+
+    await connectionToDB.query("DELETE FROM users WHERE name = 'automated test'");
+    await connectionToDB.query("DELETE FROM users WHERE name = 'Fulano'");
+    await connectionToDB.query(`DELETE FROM sessions WHERE "userId" = ${testUser.id}`);
+};
+
+beforeAll(cleanDB);
+afterAll(async () => {
+    await cleanDB();
+    connectionToDB.end();
+});
 
 describe('signUp', () => {
     it('should return 201 for correct inputs', async () => {
@@ -9,13 +29,7 @@ describe('signUp', () => {
             passwordConfirmation: '123456'
         };
         
-        let response;
-        try {
-            response = await axios.post('http://localhost:3000/user/sign-up', body);
-        }
-        catch(err) {
-            response = err.response;
-        }
+        const response = await supertest(app).post('/user/sign-up').send(body);
 
         expect(response.status).toBe(201);
     });
@@ -23,18 +37,12 @@ describe('signUp', () => {
     it('should return 409 for repeated emails', async () => {
         const body = {
             name: 'Fulano',
-            email: 'abc@gmail.com',
+            email: 'automated-test@gmail.com',
             password: '123456',
             passwordConfirmation: '123456'
         };
         
-        let response;
-        try {
-            response = await axios.post('http://localhost:3000/user/sign-up', body);
-        }
-        catch(err) {
-            response = err.response;
-        }
+        const response = await supertest(app).post('/user/sign-up').send(body);
 
         expect(response.status).toBe(409);
     });
@@ -46,13 +54,7 @@ describe('signUp', () => {
             passwordConfirmation: '123456'
         };
         
-        let response;
-        try {
-            response = await axios.post('http://localhost:3000/user/sign-up', body);
-        }
-        catch(err) {
-            response = err.response;
-        }
+        const response = await supertest(app).post('/user/sign-up').send(body);
 
         expect(response.status).toBe(400);
     });
@@ -65,13 +67,7 @@ describe('signIn', () => {
             password: '123456'
         };
 
-        let response;
-        try {
-            response = await axios.post('http://localhost:3000/user/sign-in', body);
-        }
-        catch(err) {
-            response = err.response;
-        }
+        const response = await supertest(app).post('/user/sign-in').send(body);
 
         expect(response.status).toBe(200);
     });
@@ -82,13 +78,7 @@ describe('signIn', () => {
             password: '123456'
         };
 
-        let response;
-        try {
-            response = await axios.post('http://localhost:3000/user/sign-in', body);
-        }
-        catch(err) {
-            response = err.response;
-        }
+        const response = await supertest(app).post('/user/sign-in').send(body);
 
         expect(response.status).toBe(404);
     });
@@ -99,13 +89,7 @@ describe('signIn', () => {
             password: '1234567890'
         };
 
-        let response;
-        try {
-            response = await axios.post('http://localhost:3000/user/sign-in', body);
-        }
-        catch(err) {
-            response = err.response;
-        }
+        const response = await supertest(app).post('/user/sign-in').send(body);
 
         expect(response.status).toBe(401);
     });

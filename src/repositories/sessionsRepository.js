@@ -28,6 +28,8 @@ async function findUserSession(token) {
         return { statusCode: 500, message: 'Erro no servidor' };
     }
 
+    if (!foundSession) return { statusCode: 403, message: 'Erro de autenticação' };
+
     return { statusCode: 200, content: foundSession };
 }
 
