@@ -52,11 +52,12 @@ describe('postIncome', () => {
 
         const body = {
             value: '11,90',
-            description: 'automated test'
+            description: 'automated test',
+            type: 'Expense'
         };
 
         const response = await supertest(app)
-            .post('/finances/new-income')
+            .post('/finances/new-operation')
             .set({Authorization: `Bearer ${token}`})
             .send(body);
 
@@ -68,11 +69,12 @@ describe('postIncome', () => {
 
         const body = {
             value: '11,90',
-            description: ''
+            description: '',
+            type: 'Income'
         };
 
         const response = await supertest(app)
-            .post('/finances/new-income')
+            .post('/finances/new-operation')
             .set({Authorization: `Bearer ${token}`})
             .send(body);
 
@@ -82,10 +84,11 @@ describe('postIncome', () => {
     it('should return 401 if Authorization header is not sent', async () => {
         const body = {
             value: '11,90',
-            description: 'automated test'
+            description: 'automated test',
+            type: 'Income'
         };
 
-        const response = await supertest(app).post('/finances/new-income').send(body);
+        const response = await supertest(app).post('/finances/new-operation').send(body);
 
         expect(response.status).toBe(401);
     });
@@ -95,11 +98,12 @@ describe('postIncome', () => {
 
         const body = {
             value: '11,90',
-            description: 'automated test'
+            description: 'automated test',
+            type: 'Expense'
         };
 
         const response = await supertest(app)
-            .post('/finances/new-income')
+            .post('/finances/new-operation')
             .set({Authorization: `Bearer ${token}`})
             .send(body);
 
@@ -111,11 +115,28 @@ describe('postIncome', () => {
 
         const body = {
             value: '11.90',
+            description: 'automated test',
+            type: 'Expense'
+        };
+
+        const response = await supertest(app)
+            .post('/finances/new-operation')
+            .set({Authorization: `Bearer ${token}`})
+            .send(body);
+
+        expect(response.status).toBe(422);
+    });
+
+    it('should return 422 if an operation type is not sent', async () => {
+        const token = await getValidToken();
+
+        const body = {
+            value: '11.90',
             description: 'automated test'
         };
 
         const response = await supertest(app)
-            .post('/finances/new-income')
+            .post('/finances/new-operation')
             .set({Authorization: `Bearer ${token}`})
             .send(body);
 
