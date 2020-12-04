@@ -14,7 +14,7 @@ async function createSession(id) {
         return { statusCode: 500, message: 'Erro no servidor' };
     }
 
-    return { statusCode: 200, content: newSession }
+    return { statusCode: 201, content: newSession }
 }
 
 async function findUserSession(token) {

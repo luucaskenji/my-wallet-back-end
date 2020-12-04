@@ -1,23 +1,25 @@
+const stringStripHtml = require('string-strip-html');
 const { verifyIfEmailExists, createUser, authenticateUser, endSession } = require('../repositories/usersRepository');
 const { createSession } = require('../repositories/sessionsRepository');
 
 async function signUp(req, res) {
-    const { name, email, password } = req.body;
+    let { name, email, password } = req.body;
     let createdUser;
 
-    const isRepeated = await verifyIfEmailExists(email);
+    name = stringStripHtml(name).result;
+    email = stringStripHtml(email).result;
+    password = stringStripHtml(password).result;
 
-    if (isRepeated.statusCode === 500) {
-        return res.status(500).send(isRepeated.message);
-    }
-    else if (isRepeated.statusCode === 409) {
-        return res.status(409).send(isRepeated.message);
+    const verificationResponse = await verifyIfEmailExists(email);
+
+    if (verificationResponse.statusCode !== 200) {
+        return res.status(verificationResponse.statusCode).send(verificationResponse.message)
     }
 
     const createUserResponse = await createUser({ name, email, password });
     
-    if (createUserResponse.statusCode === 500) {
-        return res.status(500).send(createdUser.message)
+    if (createUserResponse.statusCode !== 201) {
+        return res.status(createUserResponse.statusCode).send(createdUser.message)
     }
     else {
         createdUser = createUserResponse.content;
@@ -27,19 +29,16 @@ async function signUp(req, res) {
 }
 
 async function signIn(req, res) {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+    
+    email = stringStripHtml(email).result;
+
     let foundUser, newSession;
 
     const authenticateResponse = await authenticateUser(email, password);
 
-    if (authenticateResponse.statusCode === 500) {
-        return res.status(500).send(authenticateResponse.message);
-    }
-    else if (authenticateResponse.statusCode === 404) {
-        return res.status(404).send(authenticateResponse.message);
-    }
-    else if (authenticateResponse.statusCode === 401) {
-        return res.status(401).send(authenticateResponse.message);
+    if (authenticateResponse.statusCode !== 200) {
+        return res.status(authenticateResponse.statusCode).send(authenticateResponse.message);
     }
     else {
         foundUser = authenticateResponse.content;
@@ -47,8 +46,8 @@ async function signIn(req, res) {
 
     const launchSessionRequest = await createSession(foundUser.id);
 
-    if (launchSessionRequest.statusCode === 500) {
-        return res.status(500).send(launchSessionRequest.message);
+    if (launchSessionRequest.statusCode !== 201) {
+        return res.status(launchSessionRequest.statusCode).send(launchSessionRequest.message);
     }
     else {
         newSession = launchSessionRequest.content;
@@ -69,8 +68,8 @@ async function signOut(req, res) {
 
     const endSessionResponse = await endSession(user.id);
 
-    if (endSessionResponse.statusCode === 500) {
-        return res.status(500).send('Erro no servidor');
+    if (endSessionResponse.statusCode !== 200) {
+        return res.status(endSessionResponse.statusCode).send(endSessionResponse.message);
     }
 
     res.sendStatus(200);

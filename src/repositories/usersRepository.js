@@ -18,7 +18,7 @@ async function createUser({ name, email, password }) {
 
     const createdUser = { id: creationResult.id, name, email };
 
-    return { statusCode: 200, content: createdUser };
+    return { statusCode: 201, content: createdUser };
 }
 
 async function verifyIfEmailExists(email) {
