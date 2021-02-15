@@ -1,5 +1,5 @@
-'use strict';
 const { Sequelize } = require('sequelize');
+const sequelize = require('../database');
 
 class User extends Sequelize.Model { }
 
