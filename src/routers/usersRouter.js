@@ -24,4 +24,11 @@ router.post('/sign-in', async (req, res) => {
   res.status(201).send(newSession);
 });
 
+router.post('/sign-out', async (req, res) => {
+  // get userId from middleware
+  await usersController.signOut(userId);
+
+  res.sendStatus(204);
+});
+
 module.exports = router;

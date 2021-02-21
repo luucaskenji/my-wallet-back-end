@@ -1,6 +1,3 @@
-const { verifyIfEmailExists, createUser, authenticateUser, endSession } = require('../repositories/usersRepository');
-const { createSession } = require('../repositories/sessionsRepository');
-
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
@@ -50,16 +47,8 @@ class UserController {
     };
   }
 
-  async signOut(req, res) {
-    const { user } = req;
-
-    const endSessionResponse = await endSession(user.id);
-
-    if (endSessionResponse.statusCode !== 200) {
-      return res.status(endSessionResponse.statusCode).send(endSessionResponse.message);
-    }
-
-    res.sendStatus(200);
+  signOut(userId) {
+    return Session.destroy({ where: { userId } });
   }
 
   _findByEmail(email) {
