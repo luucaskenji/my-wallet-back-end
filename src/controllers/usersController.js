@@ -1,11 +1,17 @@
 const { verifyIfEmailExists, createUser, authenticateUser, endSession } = require('../repositories/usersRepository');
 const { createSession } = require('../repositories/sessionsRepository');
 
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 const User = require('../models/User');
+const Session = require('../models/Session');
 const sanitize = require('../utils/sanitizer');
-const { ExistingUserError } = require('../errors');
+const {
+  ExistingUserError,
+  NotFoundError,
+  WrongPasswordError
+} = require('../errors');
 
 class UserController {
   async signUp(name, email, password) {
@@ -14,8 +20,7 @@ class UserController {
 
     const [createdUser, hasBeenCreated] = await User.findOrCreate({
       where: { email },
-      defaults: { name, password },
-      attributes: { exclude: ['createdAt'] }
+      defaults: { name, password }
     });
 
     if (!hasBeenCreated) throw new ExistingUserError('User already exists');
@@ -28,39 +33,23 @@ class UserController {
     };
   }
 
-  async signIn(req, res) {
-    let { email, password } = req.body;
+  async signIn(email, password) {
+    const user = await this._findByEmail(email);
+    if (!user) throw new NotFoundError('User not found');
 
-    email = stringStripHtml(email).result;
+    const passwordIsCorrect = bcrypt.compareSync(password, user.password);
+    if (!passwordIsCorrect) throw new WrongPasswordError('Wrong password');
 
-    let foundUser, newSession;
+    const session = await Session.create({ userId: user.id });
+    const token = jwt.sign({ id: session.id }, process.env.JWT_SECRET);
 
-    const authenticateResponse = await authenticateUser(email, password);
-
-    if (authenticateResponse.statusCode !== 200) {
-      return res.status(authenticateResponse.statusCode).send(authenticateResponse.message);
-    }
-    else {
-      foundUser = authenticateResponse.content;
-    }
-
-    const launchSessionRequest = await createSession(foundUser.id);
-
-    if (launchSessionRequest.statusCode !== 201) {
-      return res.status(launchSessionRequest.statusCode).send(launchSessionRequest.message);
-    }
-    else {
-      newSession = launchSessionRequest.content;
-    }
-
-    const userData = {
-      id: foundUser.id,
-      name: foundUser.name,
-      email: foundUser.email,
-      token: newSession.token
+    return {
+      id: session.id,
+      userId: user.id,
+      name: user.name,
+      email,
+      token
     };
-
-    return res.status(200).send(userData);
   }
 
   async signOut(req, res) {
@@ -73,6 +62,10 @@ class UserController {
     }
 
     res.sendStatus(200);
+  }
+
+  _findByEmail(email) {
+    return User.findOne({ where: { email } });
   }
 }
 

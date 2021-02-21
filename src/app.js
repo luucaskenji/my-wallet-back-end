@@ -10,7 +10,12 @@ app.use(express.json());
 
 const usersRouter = require('./routers/usersRouter');
 const financesRouter = require('./routers/financesRouter');
-const { DataNotInPatternError, ExistingUserError } = require('./errors');
+const {
+  DataNotInPatternError,
+  ExistingUserError,
+  NotFoundError,
+  WrongPasswordError
+} = require('./errors');
 
 app.use('/users', usersRouter);
 app.use('/finances', financesRouter);
@@ -20,6 +25,8 @@ app.use((err, req, res, next) => {
 
   if (err instanceof DataNotInPatternError) return res.status(422).send(err.message);
   else if (err instanceof ExistingUserError) return res.status(409).send(err.message);
+  else if (err instanceof NotFoundError) return res.status(404).send(err.message);
+  else if (err instanceof WrongPasswordError) return res.status(401).send(err.message);
   else res.status(500).send(err);
 })
 

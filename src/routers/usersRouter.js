@@ -8,10 +8,20 @@ router.post('/sign-up', async (req, res) => {
   const { error } = authSchemas.signUp.validate(req.body);
   if (error) throw new DataNotInPatternError('Request body not valid');
 
-  const { name, email, password } = req.body
+  const { name, email, password } = req.body;
   const createdUser = await usersController.signUp(name, email, password);
 
   res.status(201).send(createdUser);
+});
+
+router.post('/sign-in', async (req, res) => {
+  const { error } = authSchemas.signIn.validate(req.body);
+  if (error) throw new DataNotInPatternError('Request body not valid');
+
+  const { email, password } = req.body;
+  const newSession = await usersController.signIn(email, password);
+
+  res.status(201).send(newSession);
 });
 
 module.exports = router;
