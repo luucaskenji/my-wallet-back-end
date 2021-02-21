@@ -1,5 +1,6 @@
 const router = require('express').Router();
 
+const authMiddleware = require('../middlewares/auth');
 const usersController = require('../controllers/usersController');
 const authSchemas = require('../schemas/authSchemas');
 const { DataNotInPatternError } = require('../errors');
@@ -24,9 +25,8 @@ router.post('/sign-in', async (req, res) => {
   res.status(201).send(newSession);
 });
 
-router.post('/sign-out', async (req, res) => {
-  // get userId from middleware
-  await usersController.signOut(userId);
+router.post('/sign-out', authMiddleware, async (req, res) => {
+  await usersController.signOut(req.userId);
 
   res.sendStatus(204);
 });

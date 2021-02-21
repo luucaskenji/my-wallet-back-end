@@ -3,9 +3,9 @@ const { getFinancesByUserId, postFinanceInDB } = require('../repositories/financ
 
 async function getOperations(req, res) {
     const { user } = req;
-    
+
     const response = await getFinancesByUserId(user.id);
-    
+
     return response.statusCode !== 200
         ? res.status(response.statusCode).send(response.message)
         : res.status(200).send(response.content)
@@ -19,10 +19,10 @@ async function postOperation(req, res) {
     type = stringStripHtml(type).result;
 
     const { user } = req;
-    
+
     value = value.replace(',', '.').trim();
 
-    value = (type === 'Income') ? parseFloat(value) : parseFloat(value)*(-1);
+    value = (type === 'Income') ? parseFloat(value) : parseFloat(value) * (-1);
 
     description = description.trim();
 

@@ -14,7 +14,8 @@ const {
   DataNotInPatternError,
   ExistingUserError,
   NotFoundError,
-  WrongPasswordError
+  WrongPasswordError,
+  AuthError
 } = require('./errors');
 
 app.use('/users', usersRouter);
@@ -27,6 +28,7 @@ app.use((err, req, res, next) => {
   else if (err instanceof ExistingUserError) return res.status(409).send(err.message);
   else if (err instanceof NotFoundError) return res.status(404).send(err.message);
   else if (err instanceof WrongPasswordError) return res.status(401).send(err.message);
+  else if (err instanceof AuthError) return res.status(401).send(err.message);
   else res.status(500).send(err);
 })
 

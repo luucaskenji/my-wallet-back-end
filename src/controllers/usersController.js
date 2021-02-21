@@ -54,6 +54,12 @@ class UserController {
   _findByEmail(email) {
     return User.findOne({ where: { email } });
   }
+
+  async getUserIdBySessionId(sessionId) {
+    const session = await Session.findByPk(sessionId);
+
+    return session.userId;
+  }
 }
 
 module.exports = new UserController();
