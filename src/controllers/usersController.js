@@ -44,8 +44,6 @@ class UserController {
     const token = jwt.sign({ id: session.id }, process.env.JWT_SECRET);
 
     return {
-      id: session.id,
-      userId: user.id,
       name: user.name,
       email,
       token
