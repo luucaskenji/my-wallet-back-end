@@ -23,8 +23,8 @@ const createUserAndSession = async () => {
 
   const testUser = await User.create(signUpBody);
 
-  const testSession = await Session.create({ userId: testUser.id })
-  const token = jwt.sign({ id: testSession.id }, process.env.JWT_SECRET)
+  const testSession = await Session.create({ userId: testUser.id });
+  const token = jwt.sign({ id: testSession.id }, process.env.JWT_SECRET);
 
   const { id, name, email, password } = testUser;
   return {
