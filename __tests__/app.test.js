@@ -3,7 +3,8 @@ const supertest = require('supertest');
 const app = require('../src/app');
 const agent = supertest(app);
 const connectionToDB = require('../src/database');
-const { cleanDB, createUserAndSession } = require('./utils');
+
+const { cleanDB, createUserAndSession, getUserSession } = require('./utils');
 
 beforeEach(cleanDB);
 afterAll(async () => {
@@ -11,7 +12,7 @@ afterAll(async () => {
   connectionToDB.close();
 });
 
-describe('signUp', () => {
+describe('POST /users/sign-up', () => {
   it('should return status code 201 and created user data if correct inputs are sent', async () => {
     const body = {
       name: 'Test',
@@ -57,7 +58,7 @@ describe('signUp', () => {
   });
 });
 
-describe('signIn', () => {
+describe('POST /users/sign-in', () => {
   it('should return 201 if receiving data matches an user in DB', async () => {
     await createUserAndSession();
     const body = {
@@ -94,6 +95,37 @@ describe('signIn', () => {
     };
 
     const response = await agent.post('/users/sign-in').send(body);
+
+    expect(response.status).toBe(401);
+  });
+});
+
+describe('POST /users/sign-out', () => {
+  it('should destroy user session and return status code 204 if sign out process has been completed', async () => {
+    const user = await createUserAndSession();
+
+    const response = await agent
+      .post('/users/sign-out')
+      .set('Authorization', `Bearer ${user.session.token}`);
+
+    const userSession = await getUserSession(user.session.id);
+
+    expect(userSession).toBeNull();
+    expect(response.status).toBe(204);
+  });
+
+  it('should return status code 401 if Authorization header is not sent', async () => {
+    const response = await agent.post('/users/sign-out');
+
+    expect(response.status).toBe(401);
+  });
+
+  it('should return status code 401 if invalid token is sent', async () => {
+    const response = await agent
+      .post('/users/sign-out')
+      .set('Authorization', 'Bearer invalidToken');
+
+    console.log(response.status);
 
     expect(response.status).toBe(401);
   });

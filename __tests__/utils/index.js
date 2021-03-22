@@ -28,7 +28,7 @@ const createUserAndSession = async () => {
 
   const { id, name, email, password } = testUser;
   return {
-    id: id,
+    id,
     name,
     email,
     password: '123456',
@@ -40,4 +40,8 @@ const createUserAndSession = async () => {
   }
 };
 
-module.exports = { cleanDB, createUserAndSession };
+const getUserSession = id => {
+  return Session.findByPk(id);
+}
+
+module.exports = { cleanDB, createUserAndSession, getUserSession };
