@@ -22,7 +22,7 @@ app.use('/users', usersRouter);
 app.use('/finances', financesRouter);
 
 app.use((err, req, res, next) => {
-  // console.log(err);
+  console.log(err);
 
   if (err instanceof DataNotInPatternError) return res.status(422).send(err.message);
   else if (err instanceof ExistingUserError) return res.status(409).send(err.message);
