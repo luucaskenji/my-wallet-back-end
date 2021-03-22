@@ -1,45 +1,28 @@
 const Finance = require('../models/Finance');
+const User = require('../models/User');
+const { NotFoundError } = require('../errors');
+const sanitize = require('../utils/sanitizer');
 
 class FinancesController {
-  getOperations(userId) {
+  async getOperations(userId) {
+    const user = await User.findByPk(userId);
+    if (!user) throw new NotFoundError('User not found');
+
     return Finance.findAll({ where: { userId } });
+  }
+
+  async postOperation(userId, newOperation) {
+    const user = await User.findByPk(userId);
+    if (!user) throw new NotFoundError('User not found');
+
+    let { value, description, type } = newOperation;
+    [value, description, type] = sanitize([value, description, type]);
+
+    value = value.replace(',', '.');
+    value = (type === 'Income') ? parseFloat(value) : parseFloat(value) * (-1);
+
+    return Finance.create({ userId, type, value, description });
   }
 }
 
-
-const stringStripHtml = require('string-strip-html');
-const { getFinancesByUserId, postFinanceInDB } = require('../repositories/financesRepository');
-
-async function getOperations(req, res) {
-  const { user } = req;
-  
-  const response = await getFinancesByUserId(user.id);
-  
-  return response.statusCode !== 200
-  ? res.status(response.statusCode).send(response.message)
-  : res.status(200).send(response.content)
-}
-
 module.exports = new FinancesController();
-
-async function postOperation(req, res) {
-  let { value, description, type } = req.body;
-
-  value = stringStripHtml(value).result;
-  description = stringStripHtml(description).result;
-  type = stringStripHtml(type).result;
-
-  const { user } = req;
-
-  value = value.replace(',', '.').trim();
-
-  value = (type === 'Income') ? parseFloat(value) : parseFloat(value) * (-1);
-
-  description = description.trim();
-
-  const postResponse = await postFinanceInDB(value, description, type, user.id);
-
-  return postResponse.statusCode !== 201
-    ? res.status(postResponse.statusCode).send(postResponse.message)
-    : res.status(201).send(postResponse.content)
-}
