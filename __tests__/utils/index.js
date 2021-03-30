@@ -44,4 +44,18 @@ const getUserSession = id => {
   return Session.findByPk(id);
 }
 
-module.exports = { cleanDB, createUserAndSession, getUserSession };
+const createTestFinance = async userId => {
+  Finance.create({
+    userId,
+    type: 'Income',
+    value: 5.55,
+    description: 'Test'
+  })
+}
+
+module.exports = {
+  cleanDB,
+  createUserAndSession,
+  getUserSession,
+  createTestFinance
+};

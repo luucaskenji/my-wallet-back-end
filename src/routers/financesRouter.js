@@ -12,7 +12,7 @@ router.get('/', authMiddleware, async (req, res) => {
 
 router.post('/', authMiddleware, async (req, res) => {
   const { error } = financesSchemas.moneyOperations.validate(req.body);
-  if (error) throw new DataNotInPatternError('Request body not valid');
+  if (error) throw new DataNotInPatternError(`Request body not valid: ${error.details[0].message}`);
 
   const createdFinance = await financesController.postOperation(req.userId, req.body);
 

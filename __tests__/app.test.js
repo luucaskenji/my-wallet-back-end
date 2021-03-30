@@ -4,7 +4,12 @@ const app = require('../src/app');
 const agent = supertest(app);
 const connectionToDB = require('../src/database');
 
-const { cleanDB, createUserAndSession, getUserSession } = require('./utils');
+const {
+  cleanDB,
+  createUserAndSession,
+  getUserSession,
+  createTestFinance
+} = require('./utils');
 
 beforeEach(cleanDB);
 afterAll(async () => {
@@ -125,8 +130,156 @@ describe('POST /users/sign-out', () => {
       .post('/users/sign-out')
       .set('Authorization', 'Bearer invalidToken');
 
-    console.log(response.status);
+    expect(response.status).toBe(401);
+  });
+});
+
+describe("get user's operation", () => {
+  it("should return 200 if user's data is correctly sent", async () => {
+    const user = await createUserAndSession();
+    await createTestFinance(user.id); // see used data in creation
+
+    const response = await supertest(app)
+      .get('/finances')
+      .set({ Authorization: `Bearer ${user.session.token}` });
+    
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual([
+      expect.objectContaining({
+        id: expect.any(Number),
+        userId: user.id,
+        type: 'Income',
+        value: 5.55,
+        description: 'Test'
+      })
+    ]);
+  });
+
+  it('should return 401 if Authorization header is not sent', async () => {
+    const response = await supertest(app).get('/finances');
 
     expect(response.status).toBe(401);
+  });
+
+  it('should return 401 if an invalid token is sent', async () => {
+    const token = 'aacaba9-aascns1az-adfm2mqpq';
+
+    const response = await supertest(app)
+      .get('/finances')
+      .set({ Authorization: `Bearer ${token}` });
+
+    expect(response.status).toBe(401);
+  });
+});
+
+describe('post new operation', () => {    
+  it('should return 201 for correct inputs', async () => {
+    const user = await createUserAndSession();
+    const body = {
+      value: '11,90',
+      description: 'automated test',
+      type: 'Expense'
+    };
+
+    const response = await supertest(app)
+        .post('/finances')
+        .set({Authorization: `Bearer ${user.session.token}`})
+        .send(body);
+
+    expect(response.status).toBe(201);
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        id: expect.any(Number),
+        userId: user.id,
+        type: 'Expense',
+        value: -11.9,
+        description: 'automated test'
+      })
+    );
+  });
+
+  it('should return 201 even if description string is empty', async () => {
+    const user = await createUserAndSession();
+
+    const body = {
+      value: '11,90',
+      description: '',
+      type: 'Income'
+    };
+
+    const response = await supertest(app)
+      .post('/finances')
+      .set({ Authorization: `Bearer ${user.session.token}` })
+      .send(body);
+
+    expect(response.status).toBe(201);
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        id: expect.any(Number),
+        userId: user.id,
+        type: 'Income',
+        value: 11.9,
+        description: ''
+      })
+    );
+  });
+
+  it('should return 401 if Authorization header is not sent', async () => {
+    const body = {
+      value: '11,90',
+      description: 'automated test',
+      type: 'Income'
+    };
+
+    const response = await supertest(app).post('/finances').send(body);
+
+    expect(response.status).toBe(401);
+  });
+
+  it('should return 403 if an invalid token is sent', async () => {
+    const token = 'aacaba9-aascns1az-adfm2mqpq';
+    const body = {
+      value: '11,90',
+      description: 'automated test',
+      type: 'Expense'
+    };
+
+    const response = await supertest(app)
+      .post('/finances')
+      .set({ Authorization: `Bearer ${token}` })
+      .send(body);
+
+    expect(response.status).toBe(401);
+  });
+
+  it('should return 422 if an invalid value pattern is sent', async () => {
+    const user = await createUserAndSession();
+    const body = {
+      value: '11.90',
+      description: 'automated test',
+      type: 'Expense'
+    };
+
+    const response = await supertest(app)
+      .post('/finances')
+      .set({ Authorization: `Bearer ${user.session.token}` })
+      .send(body);
+
+    expect(response.status).toBe(422);
+  });
+
+  it('should return 422 if an operation type is not sent', async () => {
+    const user = await createUserAndSession();
+    const body = {
+      value: '11,90',
+      description: 'automated test'
+    };
+
+    const response = await supertest(app)
+      .post('/finances')
+      .set({ Authorization: `Bearer ${user.session.token}` })
+      .send(body);
+
+    expect(response.status).toBe(422);
   });
 });
