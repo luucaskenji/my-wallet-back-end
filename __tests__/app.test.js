@@ -134,7 +134,7 @@ describe('POST /users/sign-out', () => {
   });
 });
 
-describe("get user's operation", () => {
+describe("GET /finances", () => {
   it("should return 200 if user's data is correctly sent", async () => {
     const user = await createUserAndSession();
     await createTestFinance(user.id); // see used data in creation
@@ -172,7 +172,7 @@ describe("get user's operation", () => {
   });
 });
 
-describe('post new operation', () => {    
+describe('POST /finances', () => {    
   it('should return 201 for correct inputs', async () => {
     const user = await createUserAndSession();
     const body = {

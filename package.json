@@ -38,7 +38,7 @@
   },
   "jest": {
     "testPathIgnorePatterns": [
-      "__tests__/sideFunctions"
+      "__tests__/utils/*"
     ]
   }
 }
